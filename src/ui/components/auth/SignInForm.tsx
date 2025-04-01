@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -7,6 +7,8 @@ import Button from "../ui/button/Button";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { AuthServiceImpl } from "../../../infrastructure/services/AuthServiceImpl";
+import { LoginUseCase } from "../../../core/useCases/LoginUseCase";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,8 +28,18 @@ export default function SignInForm() {
     )
   })
 
-  const handleSubmit = (data: unknown) => {
-    console.log(data)
+  const handleSubmit = async (data: { email: string; password: string }) => {
+    const authService = new AuthServiceImpl();
+    const loginUseCase = new LoginUseCase(authService);
+  
+    const user = await loginUseCase.execute(data.email, data.password);
+    if (user) {
+      alert('Login successful');
+      localStorage.setItem('token', user.token);
+      window.location.href = '/';
+    } else {
+      alert('Login failed');
+    }
   }
 
   return (
@@ -115,4 +127,3 @@ export default function SignInForm() {
     </div>
   );
 }
-
